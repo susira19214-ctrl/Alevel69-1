@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เช็คอิน DEK70 — แผนบุกสนามสอบ A-Level (สายหมอ)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#faf5ec;
+    --paper2:#f3ecdf;
+    --ink:#2b2620;
+    --ink-soft:#6b6152;
+    --line:#e4d9c4;
+    --board-bg:#12151f;
+    --board-panel:#1b2030;
+    --board-panel2:#20263a;
+    --amber:#ffc857;
+    --amber-dim:#6b5a2e;
+    --rose:#e8b4b8;
+    --blue:#a8c5d6;
+    --gold:#c9a869;
+    --lavender:#b7a5d1;
+    --sage:#9fc2a0;
+    --orange:#e3a05e;
+    --teal:#7fb8b5;
+    --coral:#d68a8a;
+    --deepgold:#c99a3e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Sarabun',sans-serif;line-height:1.6;}
+  .wrap{max-width:1040px;margin:0 auto;padding:28px 18px 100px;}
+
+  .hero{text-align:center;padding:18px 0 8px;}
+  .eyebrow{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.16em;color:var(--ink-soft);background:var(--paper2);border:1px solid var(--line);border-radius:100px;padding:5px 14px;margin-bottom:14px;}
+  h1{font-size:clamp(26px,5vw,40px);margin:0 0 6px;font-weight:800;letter-spacing:-.01em;}
+  .hero p{color:var(--ink-soft);max-width:600px;margin:0 auto;font-size:15px;}
+
+  .board{margin:28px 0 8px;background:var(--board-bg);border-radius:18px;padding:20px 16px 24px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45);position:relative;overflow:hidden;}
+  .board::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px);pointer-events:none;}
+  .board-head{display:flex;justify-content:space-between;align-items:baseline;color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;padding:0 6px 14px;border-bottom:1px dashed var(--amber-dim);margin-bottom:6px;flex-wrap:wrap;gap:4px;}
+  .flight-row{display:grid;grid-template-columns:82px 1fr 100px;gap:10px;align-items:center;background:var(--board-panel);border-radius:10px;padding:12px 14px;margin:8px 0;border:1px solid #262c40;}
+  .flight-row.today{background:var(--board-panel2);border-color:#3a4260;}
+  .flight-row.final{outline:1px solid #6b5a2e;}
+  .flight-code{font-family:'JetBrains Mono',monospace;color:var(--amber);font-size:11.5px;font-weight:700;letter-spacing:.03em;}
+  .flight-code .date{display:block;color:#8a94b5;font-weight:400;margin-top:2px;font-size:10.5px;}
+  .flight-info b{color:#fdf6e8;font-size:14px;font-weight:700;display:block;margin-bottom:3px;}
+  .flight-info span{color:#9aa3c2;font-size:12px;}
+  .flight-days{text-align:right;font-family:'JetBrains Mono',monospace;}
+  .flight-days .num{font-size:21px;font-weight:800;color:var(--amber);display:block;letter-spacing:-.02em;}
+  .flight-days .lbl{font-size:9.5px;color:#8a94b5;letter-spacing:.08em;}
+  .flight-days .landed{color:#7fd68a;font-size:12.5px;font-weight:700;}
+  @media(max-width:560px){.flight-row{grid-template-columns:1fr;text-align:left;}.flight-days{text-align:left;}.flight-days .num{display:inline;}}
+
+  .section{margin-top:50px;}
+  .section-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
+  .section-head .tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;background:var(--ink);padding:4px 10px;border-radius:6px;letter-spacing:.06em;}
+  .section-head h2{font-size:20px;margin:0;font-weight:800;}
+  .section-sub{color:var(--ink-soft);font-size:13.5px;margin:0 0 18px;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .legend .pill{font-size:12px;padding:4px 11px;border-radius:100px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .legend .dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+  .pill.content{background:#eaf1e8;color:#3d5c38;}
+  .pill.content .dot{background:#6f9a63;}
+  .pill.drill{background:#faece0;color:#7a4a1e;}
+  .pill.drill .dot{background:#e3a05e;}
+  .pill.rest{background:#eaeef4;color:#4a5670;}
+  .pill.rest .dot{background:#8a94b5;}
+  .pill.exam{background:#2b2620;color:#ffe4a3;}
+  .pill.exam .dot{background:#ffc857;}
+
+  .jump-btn{font-family:'Sarabun',sans-serif;font-weight:700;font-size:13px;background:var(--ink);color:#fff;border:none;border-radius:100px;padding:8px 16px;cursor:pointer;margin-bottom:16px;}
+
+  .month-block{border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden;background:#fff;}
+  .month-toggle{width:100%;text-align:left;background:var(--paper2);border:none;padding:13px 16px;font-family:'Sarabun',sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:var(--ink);}
+  .month-toggle .counts{font-family:'JetBrains Mono',monospace;font-weight:400;font-size:11px;color:var(--ink-soft);}
+  .month-toggle .arrow{transition:transform .2s;font-size:12px;}
+  .month-block.open .arrow{transform:rotate(90deg);}
+  .month-body{display:none;padding:4px 0;}
+  .month-block.open .month-body{display:block;}
+
+  .day-row{display:grid;grid-template-columns:74px 90px 1fr;gap:10px;align-items:flex-start;padding:8px 16px;font-size:13.5px;border-top:1px solid #f1ead9;}
+  .day-row.today-row{background:#fff6e0;}
+  .day-row .dnum{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--ink-soft);font-size:12.5px;padding-top:2px;}
+  .day-row .dnum small{display:block;font-weight:400;font-size:10px;}
+  .badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:100px;text-align:center;white-space:nowrap;height:fit-content;}
+  .badge.content{background:#eaf1e8;color:#3d5c38;}
+  .badge.drill{background:#faece0;color:#7a4a1e;}
+  .badge.rest{background:#eaeef4;color:#4a5670;}
+  .badge.exam{background:#2b2620;color:#ffe4a3;}
+  .task{display:flex;flex-direction:column;gap:4px;}
+  .task-item{display:flex;align-items:flex-start;gap:8px;}
+  .task-item .chip{width:9px;height:9px;border-radius:50%;flex:none;margin-top:6px;}
+  .task-item b{font-weight:700;}
+  .task-item .sub{color:var(--ink-soft);font-size:12.5px;}
+
+  @media(max-width:560px){
+    .day-row{grid-template-columns:56px 74px 1fr;padding:8px 10px;font-size:12.5px;}
+  }
+
+  /* ============ PACKING LIST (redesigned) ============ */
+  .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+  .stat-card{background:linear-gradient(160deg,#fff,#fbf7ee);border:1px solid var(--line);border-radius:16px;padding:16px 14px;text-align:center;}
+  .stat-card .num{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:800;color:var(--ink);}
+  .stat-card .lbl{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .stat-card.a .num{color:#5c7a52;}
+  .stat-card.b .num{color:#b56a2a;}
+
+  .search-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
+  .search-input{flex:1;min-width:220px;padding:11px 16px;border-radius:100px;border:1px solid var(--line);font-family:'Sarabun',sans-serif;font-size:14px;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;}
+  .search-input:focus{border-color:#c9a869;box-shadow:0 0 0 3px rgba(201,168,105,.15);}
+  .expand-all-btn{font-family:'Sarabun',sans-serif;font-weight:700;font-size:12.5px;background:#fff;border:1px solid var(--line);color:var(--ink-soft);border-radius:100px;padding:9px 16px;cursor:pointer;white-space:nowrap;}
+  .expand-all-btn:hover{border-color:var(--ink);color:var(--ink);}
+
+  .subject-list{display:flex;flex-direction:column;gap:14px;}
+  .subj-card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 22px -18px rgba(0,0,0,.25);transition:box-shadow .2s;}
+  .subj-card.open{box-shadow:0 14px 30px -16px rgba(0,0,0,.22);}
+
+  .subj-header{width:100%;display:flex;align-items:center;gap:14px;padding:15px 18px;background:none;border:none;cursor:pointer;text-align:left;font-family:'Sarabun',sans-serif;}
+  .subj-badge{width:44px;height:44px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:13px;color:#fff;}
+  .subj-meta{flex:1;min-width:0;}
+  .subj-meta .name-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .subj-meta .name{font-weight:800;font-size:15.5px;}
+  .subj-meta .exam-date{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-soft);}
+  .subj-meta .count{font-size:11.5px;color:var(--ink-soft);}
+  .mini-bars{display:flex;flex-direction:column;gap:5px;width:104px;flex:none;}
+  .mini-bar-row{display:flex;align-items:center;gap:6px;}
+  .mini-bar-row .mlabel{font-size:9px;color:var(--ink-soft);width:32px;flex:none;font-family:'JetBrains Mono',monospace;}
+  .mini-track{width:66px;flex:none;height:6px;background:var(--paper2);border-radius:100px;overflow:hidden;position:relative;}
+  .mini-fill{display:block;position:absolute;top:0;left:0;height:100%;border-radius:100px;transition:width .3s ease;min-width:2px;}
+  .chevron{flex:none;font-size:13px;color:var(--ink-soft);transition:transform .2s;}
+  .subj-card.open .chevron{transform:rotate(90deg);}
+  @media(max-width:640px){.mini-bars{display:none;}}
+
+  .subj-body{display:none;padding:0 18px 18px;}
+  .subj-card.open .subj-body{display:block;}
+  .sect-title{font-size:11.5px;font-weight:800;letter-spacing:.05em;color:var(--ink-soft);text-transform:uppercase;margin:16px 0 6px;padding-bottom:6px;border-bottom:1px solid #f1ead9;}
+  .sect-title:first-child{margin-top:8px;}
+
+  .item-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:7px 0;}
+  .item-row .item-text{font-size:13.5px;line-height:1.4;flex:1;padding-top:3px;}
+  .item-row .item-text.c-done{color:var(--ink-soft);}
+  .item-row .item-text.d-done{text-decoration:line-through;opacity:.55;}
+  .toggle-group{display:flex;gap:6px;flex:none;}
+  .toggle-btn{
+    font-family:'Sarabun',sans-serif;font-size:11px;font-weight:700;
+    padding:5px 10px;border-radius:100px;border:1.5px solid var(--line);
+    background:#fff;color:var(--ink-soft);cursor:pointer;white-space:nowrap;
+    transition:all .15s ease;display:flex;align-items:center;gap:4px;
+  }
+  .toggle-btn .ic{font-size:11px;}
+  .toggle-btn.on{color:#fff;border-color:transparent;}
+  .item-row.hidden-item{display:none;}
+
+  .reset-row{text-align:center;margin-top:18px;}
+
+  .note-box{background:#fff6e0;border:1px solid #f0dfa8;border-radius:12px;padding:14px 16px;font-size:13.5px;color:#5c4a1e;margin-bottom:18px;}
+
+  footer{text-align:center;margin-top:56px;color:var(--ink-soft);font-size:12.5px;}
+  .reset-btn{display:block;margin:10px auto 0;font-family:'Sarabun',sans-serif;font-size:12px;color:var(--ink-soft);background:none;border:1px solid var(--line);border-radius:100px;padding:6px 14px;cursor:pointer;}
+
+  .credit{
+    display:inline-flex;align-items:center;gap:10px;
+    margin:26px auto 0;padding:9px 10px 9px 18px;
+    background:#fff;border:1px solid var(--line);border-radius:100px;
+    box-shadow:0 10px 24px -14px rgba(0,0,0,.2);
+    text-decoration:none;color:var(--ink);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .credit:hover{transform:translateY(-2px);box-shadow:0 14px 28px -12px rgba(0,0,0,.28);border-color:#d8c9e8;}
+  .credit .txt{font-size:13px;text-align:left;line-height:1.35;}
+  .credit .txt .made{display:block;font-size:10.5px;color:var(--ink-soft);letter-spacing:.04em;}
+  .credit .txt .handle{display:block;font-weight:800;font-size:13.5px;}
+  .credit .ig-icon{
+    width:34px;height:34px;border-radius:10px;flex:none;
+    background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%,#d6249f 60%,#285AEB 90%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 10px -4px rgba(214,36,159,.55);
+  }
+  .credit .ig-icon svg{width:19px;height:19px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <span class="eyebrow">DEK70 · สายหมอ 🩺 · เช็คอินสู่สนามสอบ</span>
+    <h1>แผนบุกสนามสอบ A-Level 70</h1>
+    <p>อิงโครงสร้างข้อสอบจริงฉบับเต็มจาก mytcas.com/blueprint · นับจาก 1 ส.ค. 2569 ถึงวันสอบสุดท้าย 14 มี.ค. 2570 · แบ่งเป็นช่วงเก็บเนื้อหาและช่วงตะลุยโจทย์ พร้อมวันพักก่อนสอบทุกสนาม</p>
+  </div>
+
+  <div class="board">
+    <div class="board-head"><span>สนามสอบที่ต้องเข้า (ตัดวิชาที่ไม่เกี่ยวข้องออกแล้ว)</span><span id="board-now">—</span></div>
+    <div id="flights"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="tag">RULES</span><h2>วิธีอ่านปฏิทิน</h2></div>
+    <div class="legend">
+      <span class="pill content"><span class="dot"></span>เก็บเนื้อหา</span>
+      <span class="pill drill"><span class="dot"></span>ตะลุยโจทย์</span>
+      <span class="pill rest"><span class="dot"></span>วันพัก</span>
+      <span class="pill exam"><span class="dot"></span>วันสอบจริง</span>
+    </div>
+    <div class="note-box">
+      🐌 <b>กติกาฉบับขี้เกียจ:</b> ช่วง 1 ส.ค.–30 พ.ย. 69 คือช่วง "เก็บเนื้อหา" ส่วนใหญ่วันละ 1 หัวข้อเล็ก ๆ
+      บางวันอาจมี 2 หัวข้อสั้น ๆ เพราะเนื้อหาตามข้อสอบจริงมีค่อนข้างเยอะ แต่ยังคุมให้เบาที่สุดแล้ว
+      ทุกวันอาทิตย์พักเสมอ ถ้าวันไหนขี้เกียจจริง ๆ ก็ข้ามไปวันถัดไปได้
+      ตั้งแต่ 1 ธ.ค. 69 เป็นต้นไปคือช่วง "ตะลุยโจทย์" เน้นทำข้อสอบเก่าจับเวลาแทนการอ่านเนื้อหาใหม่
+      และวันก่อนสอบทุกสนามจะเป็น "วันพัก" ห้ามอ่านหนังสือหนัก ๆ เด็ดขาด
+    </div>
+    <button class="jump-btn" id="jump-today">📍 ไปที่วันนี้</button>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="tag">CALENDAR</span><h2>ปฏิทินรายวัน 1 ส.ค. 69 → 14 มี.ค. 70</h2></div>
+    <p class="section-sub">แตะที่ชื่อเดือนเพื่อขยาย/ย่อ</p>
+    <div id="calendar"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="tag">PACKING LIST</span><h2>เช็คลิสต์เนื้อหาแต่ละวิชา</h2></div>
+    <p class="section-sub">อิงโครงสร้างข้อสอบจริงฉบับเต็มจาก mytcas.com/blueprint จัดกลุ่มตามสาระที่ออกสอบจริง · ติ๊ก "อ่านแล้ว" และ "ทำโจทย์แล้ว" แยกกันได้ ระบบจำให้อัตโนมัติในเครื่องนี้</p>
+
+    <div class="stats-bar">
+      <div class="stat-card"><div class="num" id="stat-total">0</div><div class="lbl">หัวข้อทั้งหมด</div></div>
+      <div class="stat-card a"><div class="num" id="stat-content">0%</div><div class="lbl">อ่านเนื้อหาแล้ว</div></div>
+      <div class="stat-card b"><div class="num" id="stat-drill">0%</div><div class="lbl">ตะลุยโจทย์แล้ว</div></div>
+    </div>
+
+    <div class="search-row">
+      <input class="search-input" id="search-input" type="text" placeholder="🔍 ค้นหาหัวข้อ เช่น เมทริกซ์, กรด-เบส, TGAT2...">
+      <button class="expand-all-btn" id="expand-all-btn">ขยายทั้งหมด</button>
+    </div>
+
+    <div class="subject-list" id="subject-list"></div>
+
+    <div class="reset-row">
+      <button class="reset-btn" id="reset-btn">ล้างเช็คลิสต์ทั้งหมด</button>
+    </div>
+  </div>
+
+  <footer>
+    เก็บทีละหัวข้อ ตะลุยทีละข้อ พักก่อนสอบทุกครั้ง — สู้ ๆ นะว่าที่หมอ 🩺✈️
+
+    <a class="credit" href="https://www.instagram.com/_gorkhao_/" target="_blank" rel="noopener noreferrer">
+      <span class="ig-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2.5" y="2.5" width="19" height="19" rx="5.5" stroke="white" stroke-width="1.7"/>
+          <circle cx="12" cy="12" r="4.3" stroke="white" stroke-width="1.7"/>
+          <circle cx="17.4" cy="6.6" r="1.15" fill="white"/>
+        </svg>
+      </span>
+      <span class="txt"><span class="made">made by</span><span class="handle">_gorkhao_</span></span>
+    </a>
+  </footer>
+</div>
+
+<script>
+/* ============ SUBJECT DATA (ฉบับเต็มจาก mytcas.com/blueprint) ============ */
+const SUBJECTS = {
+  thai: {name:"ภาษาไทย", cls:"thai", color:"var(--rose)", exam:"13 มี.ค. 70", abbr:"TH", sections:[
+    {title:"ส่วนที่ 1 · การอ่าน", items:[
+      "การอ่านเพื่อเข้าใจเนื้อหา","การจับใจความ/สรุปสาระสำคัญของข้อความ","การตีความ",
+      "การวิเคราะห์จุดประสงค์/เจตนาของผู้เขียน","การวิเคราะห์ข้อคิด/แนวคิดที่ได้จากการอ่าน",
+      "การอนุมานจากเนื้อหาของข้อความที่อ่าน","ท่าที/น้ำเสียง/อารมณ์ความรู้สึก/ความคิดเห็นของผู้เขียน"
+    ]},
+    {title:"ส่วนที่ 2 · การเขียน", items:[
+      "การเรียงลำดับข้อความ","การเรียงความ","การพรรณา/บรรยาย/อธิบาย",
+      "การใช้เหตุผล","การแสดงทรรศนะ","การโต้แย้ง","การโน้มน้าว"
+    ]},
+    {title:"ส่วนที่ 3 · การพูด การฟัง", items:[
+      "การวิเคราะห์จุดประสงค์ในการพูด","การใช้ข้อความถามและตอบที่สัมพันธ์กัน",
+      "การตีความ/อนุมาน/วิเคราะห์สาร/บุคลิกของผู้พูดหรือผู้ฟัง"
+    ]},
+    {title:"ส่วนที่ 4 · หลักการใช้ภาษา", items:[
+      "การสะกดคำ","การใช้คำตรงความหมาย","ประโยคกำกวม/ประโยคบกพร่อง","ประโยคสมบูรณ์",
+      "ระดับภาษา","การใช้สำนวนถูกต้องตามความหมาย","ชนิดของประโยคตามเจตนา",
+      "คำที่มีความหมายตรง/อุปมา","คำทับศัพท์ภาษาอังกฤษ","ราชาศัพท์"
+    ]}
+  ]},
+  eng: {name:"ภาษาอังกฤษ", cls:"eng", color:"var(--blue)", exam:"14 มี.ค. 70", abbr:"EN", sections:[
+    {title:"ส่วนที่ 1 · Listening and Speaking", items:[
+      "เติมบทสนทนาแบบสั้น (Short conversation)","เติมบทสนทนาแบบยาว (Long conversation)"
+    ]},
+    {title:"ส่วนที่ 2 · Reading Skill", items:[
+      "โฆษณา (Advertisement)","บทวิจารณ์สินค้าหรือบริการ (Product/service review)",
+      "รายงานข่าว (News report)","ภาพประกอบบทความ (กราฟ ตาราง แผนผัง แผนภูมิ)",
+      "บทความทั่วไป ~500-600 คำ"
+    ]},
+    {title:"ส่วนที่ 3 · Writing Skill", items:[
+      "เติมบทความให้สมบูรณ์ (Text completion)","เรียงประโยคเป็นย่อหน้า (Paragraph organization)"
+    ]}
+  ]},
+  math1: {name:"คณิตศาสตร์ประยุกต์ 1", cls:"math1", color:"var(--gold)", exam:"14 มี.ค. 70", abbr:"M1", sections:[
+    {title:"ส่วนที่ 1 · จำนวนและพีชคณิต", items:[
+      "เซต","ตรรกศาสตร์","จำนวนจริงและพหุนาม","ฟังก์ชัน",
+      "ฟังก์ชันเอกซ์โพเนนเชียลและลอการิทึม","ฟังก์ชันตรีโกณมิติ",
+      "จำนวนเชิงซ้อน","เมทริกซ์","ลำดับและอนุกรม"
+    ]},
+    {title:"ส่วนที่ 2 · การวัดและเรขาคณิต", items:[
+      "เรขาคณิตวิเคราะห์","เวกเตอร์ในสามมิติ"
+    ]},
+    {title:"ส่วนที่ 3 · สถิติและความน่าจะเป็น", items:[
+      "สถิติ","การแจกแจงความน่าจะเป็นเบื้องต้น","หลักการนับเบื้องต้น","ความน่าจะเป็น"
+    ]},
+    {title:"ส่วนที่ 4 · แคลคูลัส", items:[
+      "แคลคูลัสเบื้องต้น"
+    ]}
+  ]},
+  social: {name:"สังคมศึกษา", cls:"social", color:"var(--lavender)", exam:"13 มี.ค. 70", abbr:"SO", sections:[
+    {title:"ส่วนที่ 1 · ศาสนา ศีลธรรม จริยธรรม", items:[
+      "ความสำคัญ ศาสดา หลักธรรมของศาสนาต่าง ๆ","การปฏิบัติตนเป็นศาสนิกชนที่ดี"
+    ]},
+    {title:"ส่วนที่ 2 · หน้าที่พลเมือง วัฒนธรรมฯ", items:[
+      "หน้าที่ของการเป็นพลเมืองที่ดี ค่านิยม วัฒนธรรมไทย","การเมืองการปกครองในสังคมปัจจุบัน"
+    ]},
+    {title:"ส่วนที่ 3 · เศรษฐศาสตร์", items:[
+      "การจัดการทรัพยากรการผลิต-บริโภค เศรษฐกิจพอเพียง","สถาบันทางเศรษฐกิจ ความร่วมมือทางเศรษฐกิจโลก"
+    ]},
+    {title:"ส่วนที่ 4 · ประวัติศาสตร์", items:[
+      "เวลาและยุคสมัยทางประวัติศาสตร์ หลักฐานและวิธีการ","พัฒนาการของมนุษยชาติ (เอเชีย ยุโรป แอฟริกา อเมริกา)",
+      "ชาติไทย การเมือง เศรษฐกิจ สังคมวัฒนธรรมไทย"
+    ]},
+    {title:"ส่วนที่ 5 · ภูมิศาสตร์", items:[
+      "โลกทางกายภาพ เครื่องมือทางภูมิศาสตร์","ปฏิสัมพันธ์ระหว่างมนุษย์กับสิ่งแวดล้อม"
+    ]}
+  ]},
+  chem: {name:"เคมี", cls:"chem", color:"var(--sage)", exam:"14 มี.ค. 70", abbr:"CH", sections:[
+    {title:"ส่วนที่ 1 · สมบัติของธาตุและสารประกอบ", items:[
+      "อะตอมและสมบัติของธาตุ","พันธะเคมี","แก๊ส","เคมีอินทรีย์","พอลิเมอร์"
+    ]},
+    {title:"ส่วนที่ 2 · สมการเคมีและการเปลี่ยนแปลงทางเคมี", items:[
+      "ปริมาณสัมพันธ์","อัตราการเกิดปฏิกิริยาเคมี","สมดุลเคมี","กรด-เบส","เคมีไฟฟ้า"
+    ]},
+    {title:"ส่วนที่ 3 · ทักษะปฏิบัติการเคมีและการคำนวณปริมาณสาร", items:[
+      "ความปลอดภัยและทักษะในปฏิบัติการเคมี","โมล","สารละลาย"
+    ]}
+  ]},
+  phys: {name:"ฟิสิกส์", cls:"phys", color:"var(--orange)", exam:"13 มี.ค. 70", abbr:"PH", sections:[
+    {title:"ส่วนที่ 1 · กลศาสตร์", items:[
+      "ธรรมชาติและพัฒนาการทางฟิสิกส์","การเคลื่อนที่แนวตรง","แรงและกฎการเคลื่อนที่","สมดุลกลของวัตถุ",
+      "งานและกฎการอนุรักษ์พลังงานกล","โมเมนตัมและการชน","การเคลื่อนที่แนวโค้ง","การเคลื่อนที่แบบฮาร์มอนิกส์อย่างง่าย"
+    ]},
+    {title:"ส่วนที่ 2 · คลื่นกล และแสง", items:[
+      "คลื่น","เสียง","แสง"
+    ]},
+    {title:"ส่วนที่ 3 · ไฟฟ้า แม่เหล็ก และคลื่นแม่เหล็กไฟฟ้า", items:[
+      "ไฟฟ้าสถิต","ไฟฟ้ากระแส","แม่เหล็กและไฟฟ้า","คลื่นแม่เหล็กไฟฟ้า"
+    ]},
+    {title:"ส่วนที่ 4 · อุณหพลศาสตร์ และสมบัติเชิงกลของสาร", items:[
+      "ความร้อนและแก๊ส","ของแข็งและของไหล"
+    ]},
+    {title:"ส่วนที่ 5 · ฟิสิกส์แผนใหม่", items:[
+      "ฟิสิกส์อะตอม","ฟิสิกส์นิวเคลียร์และฟิสิกส์อนุภาค"
+    ]}
+  ]},
+  bio: {name:"ชีววิทยา", cls:"bio", color:"var(--teal)", exam:"13 มี.ค. 70", abbr:"BI", sections:[
+    {title:"ส่วนที่ 1 · ความหลากหลายทางชีวภาพและสิ่งแวดล้อม", items:[
+      "ระบบนิเวศและไบโอม","ประชากร","ทรัพยากรธรรมชาติและสิ่งแวดล้อม","ความหลากหลายของสิ่งมีชีวิตและอนุกรมวิธาน"
+    ]},
+    {title:"ส่วนที่ 2 · หน่วยพื้นฐานของสิ่งมีชีวิต", items:[
+      "เคมีที่เป็นพื้นฐานของสิ่งมีชีวิต","โครงสร้างและการทำงานของเซลล์"
+    ]},
+    {title:"ส่วนที่ 3 · ระบบและการทำงานต่าง ๆ ของสัตว์และมนุษย์", items:[
+      "ระบบย่อยอาหาร","ระบบหมุนเวียนเลือด","ระบบน้ำเหลืองและระบบภูมิคุ้มกัน","ระบบขับถ่าย","ระบบหายใจ",
+      "ระบบประสาทและการเคลื่อนที่","ระบบสืบพันธุ์และการเจริญเติบโต","ระบบต่อมไร้ท่อ","พฤติกรรมของสัตว์"
+    ]},
+    {title:"ส่วนที่ 4 · โครงสร้างและการทำงานของส่วนต่าง ๆ ในพืช", items:[
+      "เนื้อเยื่อและโครงสร้างภายในของพืช","การแลกเปลี่ยนแก๊ส-คายน้ำ-ลำเลียงของพืช",
+      "การสังเคราะห์ด้วยแสงและสารอินทรีย์ในพืช","การสืบพันธุ์ของพืชดอก","การควบคุมการเจริญเติบโตและการตอบสนองของพืช"
+    ]},
+    {title:"ส่วนที่ 5 · พันธุศาสตร์และวิวัฒนาการ", items:[
+      "การถ่ายทอดลักษณะทางพันธุกรรม","สมบัติของสารพันธุกรรม-ยีน-การสังเคราะห์โปรตีน",
+      "การเปลี่ยนแปลงทางพันธุกรรม","เทคโนโลยีทางดีเอ็นเอ","วิวัฒนาการและพันธุศาสตร์ประชากร"
+    ]}
+  ]},
+  tgat: {name:"TGAT", cls:"tgat", color:"var(--coral)", exam:"30 ม.ค. 70", abbr:"TG", sections:[
+    {title:"TGAT1 · การสื่อสารภาษาอังกฤษ", items:[
+      "การถาม-ตอบ (Question-Response)","เติมบทสนทนาแบบสั้น (Short conversations)",
+      "เติมบทสนทนาแบบยาว (Long conversations)","เติมข้อความให้สมบูรณ์ (Text completion)",
+      "อ่านจับใจความ (Reading comprehension)"
+    ]},
+    {title:"TGAT2 · การคิดอย่างมีเหตุผล", items:[
+      "ความสามารถทางภาษา","ความสามารถทางตัวเลข","ความสามารถทางมิติสัมพันธ์","ความสามารถทางเหตุผล"
+    ]},
+    {title:"TGAT3 · สมรรถนะการทำงาน", items:[
+      "การสร้างคุณค่าและนวัตกรรม","การแก้ไขปัญหาที่ซับซ้อน","การบริหารจัดการอารมณ์","การเป็นพลเมืองที่มีส่วนร่วมของสังคม"
+    ]}
+  ]},
+  tpat1: {name:"TPAT1 (กสพท)", cls:"tpat1", color:"var(--deepgold)", exam:"13 ก.พ. 70", abbr:"T1", sections:[
+    {title:"เชาวน์ปัญญา", items:[
+      "ตัวเลขและปริมาณ","ภาษาไทยและการใช้เหตุผลเชิงภาษา","มิติสัมพันธ์และตารางข้อมูล"
+    ]},
+    {title:"จริยธรรมทางการแพทย์", items:[
+      "หลักจริยธรรมพื้นฐาน","สถานการณ์จำลอง-กรณีศึกษา"
+    ]},
+    {title:"ความคิดเชื่อมโยง", items:[
+      "จับประเด็น-สรุปเหตุผลจากบทความ"
+    ]}
+  ]}
+};
+// flatten sections -> topics (preserves order) for each subject
+Object.keys(SUBJECTS).forEach(id=>{
+  SUBJECTS[id].topics = SUBJECTS[id].sections.flatMap(s=>s.items);
+});
+const CONTENT_ORDER = ["thai","eng","math1","social","chem","phys","bio","tgat","tpat1"];
+const ALEVEL_DRILL_ORDER = ["thai","eng","math1","social","chem","phys","bio"];
+
+/* ============ DATES ============ */
+const D = (y,m,day)=> new Date(y, m-1, day);
+const DAY = 86400000;
+const PLAN_START = D(2026,8,1);
+const PLAN_END   = D(2027,3,14);
+const CONTENT_START = D(2026,8,1);
+const CONTENT_END   = D(2026,11,30);
+const TGAT_REST = D(2027,1,29);
+const TGAT_EXAM = D(2027,1,30);
+const RECOVER_START = D(2027,1,31);
+const RECOVER_END   = D(2027,2,1);
+const TPAT1_DRILL_START = D(2027,2,2);
+const TPAT1_REST = D(2027,2,12);
+const TPAT1_EXAM = D(2027,2,13);
+const ALEVEL_DRILL_START = D(2027,2,14);
+const ALEVEL_REST = D(2027,3,12);
+const ALEVEL_EXAM1 = D(2027,3,13);
+const ALEVEL_EXAM2 = D(2027,3,14);
+
+function sameDay(a,b){ return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+const WD = ["อา","จ","อ","พ","พฤ","ศ","ส"];
+const MONTH_TH = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+
+/* ============ THAILAND TIME (Asia/Bangkok, UTC+7) ============ */
+// Date.now() is an absolute instant (same everywhere). Shifting it by +7h and
+// reading the UTC fields back out gives us Bangkok's wall-clock Y/M/D/H
+// regardless of what timezone the visitor's device is set to.
+function bangkokNow(){ return new Date(Date.now() + 7*3600*1000); }
+function bangkokTodayMidnightMs(){
+  const b = bangkokNow();
+  return Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
+}
+function daysUntilBangkok(y, m, d){
+  const targetMs = Date.UTC(y, m-1, d);
+  return Math.round((targetMs - bangkokTodayMidnightMs()) / DAY);
+}
+function isBangkokToday(date){
+  const b = bangkokNow();
+  return date.getFullYear()===b.getUTCFullYear() && date.getMonth()===b.getUTCMonth() && date.getDate()===b.getUTCDate();
+}
+
+/* ============ BUILD CONTENT QUEUE (round robin across subjects) ============ */
+function buildQueue(order){
+  const rem = {}; order.forEach(k=> rem[k] = [...SUBJECTS[k].topics]);
+  const out = [];
+  let active = true;
+  while(active){
+    active = false;
+    for(const k of order){
+      if(rem[k].length){ out.push({subj:k, topic: rem[k].shift()}); active = true; }
+    }
+  }
+  return out;
+}
+const contentQueue = buildQueue(CONTENT_ORDER);
+
+/* ============ PRECOMPUTE CONTENT-PHASE DAYS + BALANCED ASSIGNMENT ============ */
+// collect non-Sunday dates within the content window
+const contentDates = [];
+for(let t = CONTENT_START.getTime(); t <= CONTENT_END.getTime(); t += DAY){
+  const d = new Date(t);
+  if(d.getDay() !== 0) contentDates.push(d);
+}
+// balanced distribution: most days get 1 item, a few get 2+ so everything fits by CONTENT_END
+const contentAssignment = new Map(); // key: date.toDateString() -> array of {subj,topic}
+{
+  let qi = 0;
+  for(let i = 0; i < contentDates.length; i++){
+    const daysLeft = contentDates.length - i;
+    const remaining = contentQueue.length - qi;
+    const count = remaining > 0 ? Math.max(1, Math.ceil(remaining / daysLeft)) : 0;
+    const items = [];
+    for(let c = 0; c < count && qi < contentQueue.length; c++){ items.push(contentQueue[qi++]); }
+    contentAssignment.set(contentDates[i].toDateString(), items);
+  }
+}
+
+/* ============ BUILD DAY LIST ============ */
+const days = [];
+for(let t = PLAN_START.getTime(); t <= PLAN_END.getTime(); t += DAY){
+  const date = new Date(t);
+  const dow = date.getDay();
+  let info;
+
+  if(sameDay(date, TGAT_EXAM)){
+    info = {type:"exam", label:"สอบ TGAT", items:[{desc:"TGAT (ความถนัดทั่วไป) — ช่วงบ่าย 13.00-16.00 น."}]};
+  } else if(sameDay(date, TPAT1_EXAM)){
+    info = {type:"exam", label:"สอบ TPAT1", items:[{desc:"TPAT1 วิชาเฉพาะ กสพท — 08.30-12.30 น."}]};
+  } else if(sameDay(date, ALEVEL_EXAM1)){
+    info = {type:"exam", label:"สอบ A-Level วันที่ 1", items:[{desc:"ชีววิทยา 08.30 · ฟิสิกส์ 11.00 · ภาษาไทย 13.30 · สังคมศึกษา 15.30"}]};
+  } else if(sameDay(date, ALEVEL_EXAM2)){
+    info = {type:"exam", label:"สอบ A-Level วันที่ 2 (วันสุดท้าย)", items:[{desc:"คณิตศาสตร์ 1 08.30 · ภาษาอังกฤษ 11.00 · เคมี 13.30 — ปิดสนามสอบ! 🎉"}]};
+  } else if(sameDay(date, TGAT_REST) || sameDay(date, TPAT1_REST) || sameDay(date, ALEVEL_REST)){
+    info = {type:"rest", label:"พักก่อนสอบ", items:[{desc:"ห้ามอ่านหนังสือหนัก ๆ พรุ่งนี้สอบแล้ว นอนให้พอ ทบทวน cheat sheet เบา ๆ ได้"}]};
+  } else if(dow === 0){
+    info = {type:"rest", label:"พักประจำสัปดาห์", items:[{desc:"วันอาทิตย์ พักเต็มที่ ไม่ต้องรู้สึกผิด"}]};
+  } else if(date.getTime() >= RECOVER_START.getTime() && date.getTime() <= RECOVER_END.getTime()){
+    info = {type:"rest", label:"พักฟื้นหลังสอบ TGAT", items:[{desc:"ทบทวนเบา ๆ หรือพักสมองก็ได้ ยังไม่ต้องเริ่มตะลุย TPAT1"}]};
+  } else if(date.getTime() >= CONTENT_START.getTime() && date.getTime() <= CONTENT_END.getTime()){
+    const assigned = contentAssignment.get(date.toDateString()) || [];
+    if(assigned.length){
+      info = {type:"content", label:"เก็บเนื้อหา", items: assigned.map(a=>({subj:a.subj, desc:a.topic}))};
+    } else {
+      info = {type:"content", label:"บัฟเฟอร์ / ทบทวนของเก่า", items:[{desc:"เลือกวิชาที่ยังไม่มั่นใจมาทบทวนซ้ำ หรือพักก็ได้"}]};
+    }
+  } else if(date.getTime() < TGAT_REST.getTime()){
+    const topics = SUBJECTS.tgat.topics;
+    const i = Math.floor((date.getTime() - (CONTENT_END.getTime()+DAY)) / DAY);
+    info = {type:"drill", label:"ตะลุยโจทย์ TGAT", items:[{subj:"tgat", desc: topics[((i % topics.length)+topics.length)%topics.length]}]};
+  } else if(date.getTime() >= TPAT1_DRILL_START.getTime() && date.getTime() < TPAT1_REST.getTime()){
+    const topics = SUBJECTS.tpat1.topics;
+    const i = Math.floor((date.getTime() - TPAT1_DRILL_START.getTime()) / DAY);
+    info = {type:"drill", label:"ตะลุยโจทย์ TPAT1", items:[{subj:"tpat1", desc: topics[i % topics.length]}]};
+  } else if(date.getTime() >= ALEVEL_DRILL_START.getTime() && date.getTime() < ALEVEL_REST.getTime()){
+    const dayIndex = Math.floor((date.getTime() - ALEVEL_DRILL_START.getTime()) / DAY);
+    const subj = ALEVEL_DRILL_ORDER[dayIndex % ALEVEL_DRILL_ORDER.length];
+    const round = Math.floor(dayIndex / ALEVEL_DRILL_ORDER.length);
+    const topics = SUBJECTS[subj].topics;
+    info = {type:"drill", label:"ตะลุยโจทย์ "+SUBJECTS[subj].name, items:[{subj:subj, desc: topics[round % topics.length]}]};
+  } else {
+    info = {type:"rest", label:"พัก", items:[{desc:"วันพักเพิ่มเติม"}]};
+  }
+  days.push({date, ...info});
+}
+
+/* ============ RENDER CALENDAR ============ */
+function isToday(date){ return isBangkokToday(date); }
+function colorVar(subjId){
+  const map = {thai:"--rose",eng:"--blue",math1:"--gold",social:"--lavender",chem:"--sage",phys:"--orange",bio:"--teal",tgat:"--coral",tpat1:"--deepgold"};
+  return map[subjId] || "--ink-soft";
+}
+
+function renderCalendar(){
+  const root = document.getElementById("calendar");
+  const byMonth = {};
+  days.forEach(d=>{
+    const key = d.date.getFullYear()+"-"+d.date.getMonth();
+    if(!byMonth[key]) byMonth[key] = [];
+    byMonth[key].push(d);
+  });
+  const now = bangkokNow();
+  root.innerHTML = "";
+  Object.keys(byMonth).forEach(key=>{
+    const list = byMonth[key];
+    const first = list[0].date;
+    const monthLabel = MONTH_TH[first.getMonth()] + " " + (first.getFullYear()+543);
+    const counts = {content:0, drill:0, rest:0, exam:0};
+    list.forEach(d=> counts[d.type]++);
+    const isCurrentMonth = first.getFullYear()===now.getUTCFullYear() && first.getMonth()===now.getUTCMonth();
+
+    const block = document.createElement("div");
+    block.className = "month-block" + (isCurrentMonth ? " open" : "");
+    block.id = "month-"+key;
+
+    const toggle = document.createElement("button");
+    toggle.className = "month-toggle";
+    toggle.innerHTML = `<span>${monthLabel}</span><span class="counts">เก็บ ${counts.content} · ตะลุย ${counts.drill} · พัก ${counts.rest} · สอบ ${counts.exam}</span><span class="arrow">▶</span>`;
+    toggle.addEventListener("click", ()=> block.classList.toggle("open"));
+    block.appendChild(toggle);
+
+    const body = document.createElement("div");
+    body.className = "month-body";
+    list.forEach(d=>{
+      const row = document.createElement("div");
+      row.className = "day-row" + (isToday(d.date) ? " today-row" : "");
+      if(isToday(d.date)) row.id = "today-row";
+      const itemsHtml = d.items.map(it=>{
+        const color = it.subj ? getComputedStyle(document.documentElement).getPropertyValue(colorVar(it.subj)) : null;
+        return `<div class="task-item">${it.subj?`<span class="chip" style="background:${color}"></span>`:""}<span><b>${it.subj?SUBJECTS[it.subj].name+": ":""}</b><span class="sub">${it.desc}</span></span></div>`;
+      }).join("");
+      row.innerHTML = `
+        <div class="dnum">${d.date.getDate()} ${MONTH_TH[d.date.getMonth()]}<small>${WD[d.date.getDay()]}</small></div>
+        <div><span class="badge ${d.type}">${d.type==="content"?"เก็บเนื้อหา":d.type==="drill"?"ตะลุยโจทย์":d.type==="rest"?"พัก":"สอบ"}</span></div>
+        <div class="task">${itemsHtml}</div>
+      `;
+      body.appendChild(row);
+    });
+    block.appendChild(body);
+    root.appendChild(block);
+  });
+}
+renderCalendar();
+
+document.getElementById("jump-today").addEventListener("click", ()=>{
+  const now = bangkokNow();
+  const key = now.getUTCFullYear()+"-"+now.getUTCMonth();
+  const block = document.getElementById("month-"+key);
+  if(block){
+    block.classList.add("open");
+    setTimeout(()=>{
+      const row = document.getElementById("today-row");
+      if(row) row.scrollIntoView({behavior:"smooth", block:"center"});
+      else block.scrollIntoView({behavior:"smooth", block:"start"});
+    }, 50);
+  } else {
+    alert("วันนี้อยู่นอกช่วงแผน (1 ส.ค. 69 – 14 มี.ค. 70)");
+  }
+});
+
+/* ============ DEPARTURE BOARD ============ */
+// y/m/d are the Bangkok calendar date of each exam — the countdown is a whole-day
+// difference against "today" in Bangkok time, so it ticks down once per day at
+// Thai midnight instead of drifting with exact exam start times or visitor timezone.
+const flights = [
+  {code:"TGAT 90", y:2027,m:1,d:30, date:"30 ม.ค. 70 (บ่าย)",
+   title:"TGAT", info:"ความสามารถทางภาษา · ตัวเลข · มิติสัมพันธ์ · เหตุผล · สมรรถนะการทำงาน"},
+  {code:"TPAT1 10", y:2027,m:2,d:13, date:"13 ก.พ. 70",
+   title:"TPAT1 (กสพท)", info:"เชาวน์ปัญญา · จริยธรรมการแพทย์ · ความคิดเชื่อมโยง"},
+  {code:"A-LV D1", y:2027,m:3,d:13, date:"13 มี.ค. 70",
+   title:"A-Level วันที่ 1", info:"ชีววิทยา · ฟิสิกส์ · ภาษาไทย · สังคมศึกษา"},
+  {code:"A-LV D2", y:2027,m:3,d:14, date:"14 มี.ค. 70 · วันสุดท้าย",
+   title:"A-Level วันที่ 2 — ปิดสนาม", info:"คณิตศาสตร์ประยุกต์ 1 · ภาษาอังกฤษ · เคมี"},
+];
+function daysLeft(f){ return daysUntilBangkok(f.y, f.m, f.d); }
+function renderBoard(){
+  const el = document.getElementById("flights");
+  el.innerHTML = flights.map((f,i)=>{
+    const d = daysLeft(f);
+    let daysHtml;
+    if(d > 0) daysHtml = `<span class="num">${d}</span><span class="lbl">วันเหลือ</span>`;
+    else if(d === 0) daysHtml = `<span class="landed">สอบวันนี้!</span>`;
+    else daysHtml = `<span class="landed">ผ่านแล้ว ✓</span>`;
+    return `<div class="flight-row ${d<=0?'today':''} ${i===flights.length-1?'final':''}">
+      <div class="flight-code">${f.code}<span class="date">${f.date}</span></div>
+      <div class="flight-info"><b>${f.title}</b><span>${f.info}</span></div>
+      <div class="flight-days">${daysHtml}</div>
+    </div>`;
+  }).join("");
+  const bkk = bangkokNow();
+  const bkkDateLabel = new Date(Date.UTC(bkk.getUTCFullYear(), bkk.getUTCMonth(), bkk.getUTCDate()))
+    .toLocaleDateString("th-TH",{day:"numeric",month:"long",year:"numeric",timeZone:"UTC"});
+  document.getElementById("board-now").textContent = "วันนี้ " + bkkDateLabel + " (เวลาไทย)";
+}
+renderBoard();
+
+/* ============ PACKING LIST (checklist) ============ */
+let checkState = {};
+let openState = {};
+const STORAGE_KEY = "alevel70-checklist-state-v4";
+function topicKey(subjId, idx, kind){ return subjId + ":" + idx + ":" + kind; }
+
+function resolveColor(cssVar){ return getComputedStyle(document.documentElement).getPropertyValue(cssVar); }
+
+function renderSubjectList(){
+  const root = document.getElementById("subject-list");
+  root.innerHTML = "";
+  let grandTotal = 0, grandContent = 0, grandDrill = 0;
+
+  CONTENT_ORDER.forEach(id=>{
+    const s = SUBJECTS[id];
+    const total = s.topics.length;
+    let contentDone = 0, drillDone = 0;
+    s.topics.forEach((_,i)=>{
+      if(checkState[topicKey(id,i,"content")]) contentDone++;
+      if(checkState[topicKey(id,i,"drill")]) drillDone++;
+    });
+    grandTotal += total; grandContent += contentDone; grandDrill += drillDone;
+    const cPct = Math.round((contentDone/total)*100);
+    const dPct = Math.round((drillDone/total)*100);
+    const isOpen = !!openState[id];
+
+    const card = document.createElement("div");
+    card.className = "subj-card" + (isOpen ? " open" : "");
+    card.id = "subj-"+id;
+
+    const color = resolveColor(colorVar(id));
+    const header = document.createElement("button");
+    header.className = "subj-header";
+    header.innerHTML = `
+      <span class="subj-badge" style="background:${color}">${s.abbr}</span>
+      <span class="subj-meta">
+        <span class="name-row"><span class="name">${s.name}</span><span class="exam-date">สอบ ${s.exam}</span></span>
+        <span class="count">${total} หัวข้อ</span>
+      </span>
+      <span class="mini-bars">
+        <span class="mini-bar-row"><span class="mlabel">อ่าน</span><span class="mini-track"><span class="mini-fill" style="width:${cPct}%;background:${color}"></span></span></span>
+        <span class="mini-bar-row"><span class="mlabel">โจทย์</span><span class="mini-track"><span class="mini-fill" style="width:${dPct}%;background:var(--orange)"></span></span></span>
+      </span>
+      <span class="chevron">▶</span>
+    `;
+    header.addEventListener("click", ()=>{
+      openState[id] = !openState[id];
+      card.classList.toggle("open", openState[id]);
+    });
+    card.appendChild(header);
+
+    const body = document.createElement("div");
+    body.className = "subj-body";
+    let flatIdx = 0;
+    s.sections.forEach(sect=>{
+      const secTitle = document.createElement("div");
+      secTitle.className = "sect-title";
+      secTitle.textContent = sect.title;
+      body.appendChild(secTitle);
+      sect.items.forEach(topic=>{
+        const idx = flatIdx++;
+        const cKey = topicKey(id, idx, "content");
+        const dKey = topicKey(id, idx, "drill");
+        const cOn = !!checkState[cKey];
+        const dOn = !!checkState[dKey];
+        const row = document.createElement("div");
+        row.className = "item-row";
+        row.dataset.search = (topic + " " + s.name).toLowerCase();
+        row.innerHTML = `
+          <div class="item-text${cOn?" c-done":""}${dOn?" d-done":""}">${topic}</div>
+          <div class="toggle-group">
+            <button class="toggle-btn c-btn${cOn?" on":""}" data-key="${cKey}" style="${cOn?`background:${color};`:""}"><span class="ic">📘</span>อ่าน</button>
+            <button class="toggle-btn d-btn${dOn?" on":""}" data-key="${dKey}" style="${dOn?`background:var(--orange);`:""}"><span class="ic">✏️</span>โจทย์</button>
+          </div>
+        `;
+        body.appendChild(row);
+      });
+    });
+    card.appendChild(body);
+    root.appendChild(card);
+  });
+
+  root.querySelectorAll(".toggle-btn").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const key = btn.dataset.key;
+      checkState[key] = !checkState[key];
+      await saveState();
+      renderSubjectList();
+      applySearchFilter();
+    });
+  });
+
+  document.getElementById("stat-total").textContent = grandTotal;
+  document.getElementById("stat-content").textContent = Math.round((grandContent/grandTotal)*100) + "%";
+  document.getElementById("stat-drill").textContent = Math.round((grandDrill/grandTotal)*100) + "%";
+}
+
+function applySearchFilter(){
+  const q = document.getElementById("search-input").value.trim().toLowerCase();
+  document.querySelectorAll(".subj-card").forEach(card=>{
+    let anyMatch = false;
+    card.querySelectorAll(".item-row").forEach(row=>{
+      const match = !q || row.dataset.search.includes(q);
+      row.classList.toggle("hidden-item", !match);
+      if(match) anyMatch = true;
+    });
+    card.querySelectorAll(".sect-title").forEach(st=>{
+      // hide section titles with no visible rows following until next section title
+      let el = st.nextElementSibling; let hasVisible = false;
+      while(el && !el.classList.contains("sect-title")){
+        if(!el.classList.contains("hidden-item")) hasVisible = true;
+        el = el.nextElementSibling;
+      }
+      st.style.display = hasVisible ? "" : "none";
+    });
+    if(q){
+      card.style.display = anyMatch ? "" : "none";
+      if(anyMatch) card.classList.add("open");
+    } else {
+      card.style.display = "";
+    }
+  });
+}
+document.getElementById("search-input").addEventListener("input", applySearchFilter);
+
+document.getElementById("expand-all-btn").addEventListener("click", ()=>{
+  const anyClosed = CONTENT_ORDER.some(id=>!openState[id]);
+  CONTENT_ORDER.forEach(id=> openState[id] = anyClosed);
+  document.getElementById("expand-all-btn").textContent = anyClosed ? "ย่อทั้งหมด" : "ขยายทั้งหมด";
+  renderSubjectList();
+  applySearchFilter();
+});
+
+async function loadState(){
+  try{
+    const result = await window.storage.get(STORAGE_KEY, false);
+    if(result && result.value) checkState = JSON.parse(result.value);
+  }catch(err){ checkState = {}; }
+  renderSubjectList();
+}
+async function saveState(retry){
+  try{
+    const result = await window.storage.set(STORAGE_KEY, JSON.stringify(checkState), false);
+    if(!result) throw new Error("empty result");
+    showSaveNote("บันทึกแล้ว ✓", false);
+  }catch(err){
+    console.warn("Storage save failed, will keep working locally:", err);
+    if(!retry){
+      setTimeout(()=> saveState(true), 800);
+    } else {
+      showSaveNote("บันทึกอัตโนมัติมีปัญหาชั่วคราว — ติ๊กยังใช้ได้ปกติในเซสชันนี้ ลองรีเฟรชหน้าเว็บถ้าอยากให้บันทึกอีกครั้ง", true);
+    }
+  }
+}
+
+let saveNoteTimer;
+function showSaveNote(msg, isWarning){
+  let note = document.getElementById("save-note");
+  if(!note){
+    note = document.createElement("div");
+    note.id = "save-note";
+    note.style.cssText = "position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:50;padding:8px 16px;border-radius:100px;font-family:'Sarabun',sans-serif;font-size:12.5px;font-weight:600;box-shadow:0 8px 20px -8px rgba(0,0,0,.3);transition:opacity .3s;max-width:90vw;text-align:center;";
+    document.body.appendChild(note);
+  }
+  note.textContent = msg;
+  note.style.background = isWarning ? "#fdecea" : "#eaf1e8";
+  note.style.color = isWarning ? "#8a3a2e" : "#3d5c38";
+  note.style.opacity = "1";
+  clearTimeout(saveNoteTimer);
+  saveNoteTimer = setTimeout(()=>{ note.style.opacity = "0"; }, isWarning ? 5000 : 1500);
+}
+
+document.getElementById("reset-btn").addEventListener("click", async ()=>{
+  if(confirm("ล้างเช็คลิสต์ทั้งหมดที่ติ๊กไว้?")){
+    checkState = {};
+    await saveState();
+    renderSubjectList();
+  }
+});
+loadState();
+</script>
+</body>
+</html>
