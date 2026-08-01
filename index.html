@@ -777,22 +777,59 @@ document.getElementById("expand-all-btn").addEventListener("click", ()=>{
   applySearchFilter();
 });
 
+// window.storage only exists inside Claude.ai's own preview/artifact sandbox.
+// When this file is hosted elsewhere (GitHub Pages, a phone browser, etc.) that
+// API isn't there at all, so we detect it and fall back to the browser's own
+// localStorage — which is exactly what a normal hosted website should use.
+const hasCloudStorage = (typeof window !== "undefined") && !!window.storage
+  && typeof window.storage.get === "function" && typeof window.storage.set === "function";
+
 async function loadState(){
+  // localStorage is synchronous and always available on a real website — read it first
+  // as the reliable baseline, then let cloud storage (inside Claude.ai) override it if present.
   try{
-    const result = await window.storage.get(STORAGE_KEY, false);
-    if(result && result.value) checkState = JSON.parse(result.value);
-  }catch(err){ checkState = {}; }
+    const local = localStorage.getItem(STORAGE_KEY);
+    if(local) checkState = JSON.parse(local);
+  }catch(err){ /* localStorage can be unavailable in some private-browsing modes — ignore */ }
+
+  if(hasCloudStorage){
+    try{
+      const result = await window.storage.get(STORAGE_KEY, false);
+      if(result && result.value) checkState = JSON.parse(result.value);
+    }catch(err){ /* no cloud record yet, or temporarily unavailable — keep local value */ }
+  }
   renderSubjectList();
 }
+
+let cloudFailStreak = 0;
+const CLOUD_FAIL_LIMIT = 2; // after this many consecutive failures, stop bothering the cloud this session
+
 async function saveState(retry){
+  // Always write to localStorage first — synchronous, and works whether this page
+  // lives inside Claude.ai or as a plain website (e.g. hosted on GitHub Pages).
+  let localOk = true;
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(checkState)); }
+  catch(err){ localOk = false; console.warn("localStorage save failed:", err); }
+
+  if(!hasCloudStorage || cloudFailStreak >= CLOUD_FAIL_LIMIT){
+    if(localOk) showSaveNote("บันทึกในเครื่องนี้แล้ว ✓", false);
+    else showSaveNote("เบราว์เซอร์นี้บันทึกไม่ได้ (อาจอยู่ในโหมดส่วนตัว) ลองใช้เบราว์เซอร์ปกติดู", true);
+    return;
+  }
+
   try{
     const result = await window.storage.set(STORAGE_KEY, JSON.stringify(checkState), false);
     if(!result) throw new Error("empty result");
+    cloudFailStreak = 0;
     showSaveNote("บันทึกแล้ว ✓", false);
   }catch(err){
-    console.warn("Storage save failed, will keep working locally:", err);
     if(!retry){
       setTimeout(()=> saveState(true), 800);
+      return;
+    }
+    cloudFailStreak++;
+    if(localOk){
+      showSaveNote("บันทึกในเครื่องนี้แล้ว ✓ (ระบบบันทึกกลางมีปัญหาชั่วคราว)", false);
     } else {
       showSaveNote("บันทึกอัตโนมัติมีปัญหาชั่วคราว — ติ๊กยังใช้ได้ปกติในเซสชันนี้ ลองรีเฟรชหน้าเว็บถ้าอยากให้บันทึกอีกครั้ง", true);
     }
